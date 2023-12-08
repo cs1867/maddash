@@ -1,0 +1,26 @@
+name: systemd-build
+on: push
+jobs:
+  setup-containers:
+    strategy:
+      matrix:
+          os: [ 'el9' ]
+ 
+    runs-on: ubuntu-latest
+   
+    steps:
+       - name: Check out Repo
+         uses: actions/checkout@v3
+       - name: add os version
+         run: sed -i '1 i\OS=${{ matrix.os }}'  manual-build
+       - name: Run Docker Run
+         run: curl -s https://raw.githubusercontent.com/cs1867/docker-oneshot-builder/main/build | sh -s - --run manual-build . ${{ matrix.os }}
+
+       - name: tar files
+         run: tar -cvf maddash.tar ./unibuild-repo
+        
+       - name: Archive repo
+         uses: actions/upload-artifact@v3
+         with:
+           name: maddash-${{ matrix.os }}.tar
+           path: maddash.tar 
